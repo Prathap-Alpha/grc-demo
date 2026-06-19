@@ -70,20 +70,28 @@
   <main class="main" id="main"></main>
 </div>
 
-<div class="demobar">Interactive demo · sample data · try “Raise RQ” and “Amend”. The real app runs at localhost:3007 with live data.</div>
+<div class="demobar">Interactive demo · sample data · click any RQ → PRINT PDF · SEND TO LENARD · DOWNLOAD FNB FILE · AMEND · DELETE. Real banking lives only in the private app.</div>
 
 <script>
 const money=n=>(n<0?'('+Math.abs(n).toLocaleString(undefined,{minimumFractionDigits:2})+')':n.toLocaleString(undefined,{minimumFractionDigits:2}));
 function enter(){document.getElementById('login').style.display='none';document.getElementById('app').style.display='grid';show('dash');}
 const TABS=[['dash','Dashboard'],['rq','Requisitions'],['suppliers','Suppliers'],['members','Members'],['events','Events'],['inventory','Inventory'],['reports','Reports']];
 
-let nextRq=341;
+let nextRq=342;
+// Demo requisitions — SAMPLE data only. Account numbers are masked/fake (no real banking).
 const rqs=[
- {ref:'RQ-340',payee:'Transport refund',amt:1650,st:'PENDING'},
- {ref:'RQ-339',payee:'Gift wages — May 2026',amt:2100,st:'PAID'},
+ {ref:'RQ-341',payee:'Water Bowser Services',amt:500,st:'PENDING',note:'Water to fill the range tank',sup:'Water Bowser Services',bank:{name:'First National Bank',acct:'62•••••••01',branch:'282167'}},
+ {ref:'RQ-340',payee:'Transport refund',amt:1650,st:'PENDING',note:'Member fuel reimbursement'},
+ {ref:'RQ-339',payee:'Gift wages — May 2026',amt:2100,st:'PAID',note:'Range helper monthly wage'},
  {ref:'RQ-338',payee:'Gift wages — April 2026',amt:2100,st:'PAID'},
  {ref:'RQ-337',payee:'Range officer reimbursement',amt:3480,st:'PAID'},
- {ref:'RQ-336',payee:'Ammunition supplier',amt:134800,st:'PENDING'},
+ {ref:'RQ-336',payee:'Pan-African Ammunition',amt:134800,st:'PENDING',note:'BW Open competition ammo',sup:'Pan-African Ammunition',bank:{name:'First Capital Bank',acct:'10•••••••44',branch:'440267'}},
+ {ref:'RQ-335',payee:'Clay Targets Supplies',amt:42500,st:'PAID',sup:'Clay Targets Supplies',bank:{name:'Stanbic Bank',acct:'90•••••••12',branch:'064967'}},
+ {ref:'RQ-334',payee:'Promatic Clay Machines',amt:108536,st:'PAID',note:'Autoball machine (capital)'},
+ {ref:'RQ-333',payee:'Competition prizes',amt:6200,st:'PAID'},
+ {ref:'RQ-332',payee:'Grounds maintenance',amt:1800,st:'REJECTED',note:'Duplicate of RQ-329'},
+ {ref:'RQ-331',payee:'Range hardware',amt:3950,st:'PAID'},
+ {ref:'RQ-330',payee:'Print & signage',amt:2450,st:'PAID'},
 ];
 const suppliers=[
  ['Pan-African Ammunition','First Capital Bank','LOCKED'],['Clay Targets Supplies','Stanbic','LOCKED'],
@@ -128,7 +136,7 @@ function dash(){return `<h1 class="pg">Morning, Range Officer</h1><p class="sub"
   <table style="margin-top:10px"><tbody>${rqs.slice(0,5).map(r=>`<tr><td class="mono">${r.ref}</td><td class="steel">${r.payee}</td><td class="r mono">BWP ${money(r.amt)}</td><td class="r"><span class="badge ${stBadge(r.st)}">${r.st}</span></td></tr>`).join('')}</tbody></table>
  </div>`;}
 
-function rqView(){return `<h1 class="pg">Requisitions</h1><p class="sub">Next number: RQ-${nextRq}. Pending RQs can be amended.</p>
+function rqView(){return `<h1 class="pg">Requisitions</h1><p class="sub">Next number: RQ-${nextRq}. Click any RQ to open the document — print the PDF, send the sign-off link to Lenard, download the FNB file, amend or delete.</p>
  <div class="glass card"><div class="mono clay" style="font-size:11px">RAISE A REQUISITION</div>
   <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
    <input class="inp" id="rp" placeholder="Payable to" style="flex:2;min-width:180px"/>
@@ -136,16 +144,66 @@ function rqView(){return `<h1 class="pg">Requisitions</h1><p class="sub">Next nu
    <button class="btn" onclick="raise()">GENERATE RQ-${nextRq}</button>
   </div></div>
  <div class="glass card"><table><thead><tr><th>RQ</th><th>PAYABLE TO</th><th class="r">AMOUNT (BWP)</th><th class="r">STATUS</th><th class="r">ACTION</th></tr></thead>
-  <tbody>${rqs.map(r=>`<tr><td class="mono clay">${r.ref}</td><td>${r.payee}</td><td class="r mono">${money(r.amt)}</td><td class="r"><span class="badge ${stBadge(r.st)}">${r.st}</span></td><td class="r">${r.st==='PENDING'?`<span class="alink" onclick="amend('${r.ref}')">Amend</span>`:'<span class="steel" style="font-size:12px">locked</span>'}</td></tr>`).join('')}</tbody></table></div>`;}
+  <tbody>${rqs.map(r=>`<tr><td class="mono clay" style="cursor:pointer" onclick="rqDoc('${r.ref}')">${r.ref}</td><td style="cursor:pointer" onclick="rqDoc('${r.ref}')">${r.payee}</td><td class="r mono">${money(r.amt)}</td><td class="r"><span class="badge ${stBadge(r.st)}">${r.st}</span></td><td class="r"><span class="alink" onclick="rqDoc('${r.ref}')">Open →</span></td></tr>`).join('')}</tbody></table></div>`;}
 
 function raise(){const p=document.getElementById('rp').value.trim();const a=parseFloat(document.getElementById('ra').value)||0;
  if(!p||a<=0){alert('Enter a payee and amount.');return;}
- rqs.unshift({ref:'RQ-'+nextRq,payee:p,amt:a,st:'PENDING'});nextRq++;show('rq');}
+ const ref='RQ-'+nextRq;rqs.unshift({ref:ref,payee:p,amt:a,st:'PENDING'});nextRq++;rqDoc(ref);}
 
 function amend(ref){const r=rqs.find(x=>x.ref===ref);if(!r)return;
  const np=prompt('Amend payee for '+ref+':',r.payee);if(np===null)return;
  const na=prompt('Amend amount for '+ref+' (BWP):',r.amt);if(na===null)return;
- r.payee=np.trim()||r.payee;r.amt=parseFloat(na)||r.amt;show('rq');}
+ r.payee=np.trim()||r.payee;r.amt=parseFloat(na)||r.amt;rqDoc(ref);}
+
+function rqDoc(ref){const r=rqs.find(x=>x.ref===ref);if(!r){show('rq');return;}
+ const pending=r.st==='PENDING',paid=r.st==='PAID',rejected=r.st==='REJECTED';
+ document.getElementById('main').innerHTML=`
+ <div class="row" style="margin-bottom:10px"><span class="alink" onclick="show('rq')">← Requisitions</span>
+  <button class="inp" style="cursor:pointer;background:none" onclick="window.print()">PRINT / SAVE PDF</button></div>
+ <div class="glass card" id="rqpaper">
+  <div class="row" style="align-items:flex-start">
+   <div><div class="serif" style="font-size:17px">Gaborone Rifle Club</div><div class="steel mono" style="font-size:11px">Unit 2, Plot 144, Mountain View · P.O. Box 26374, Gaborone</div></div>
+   <div style="text-align:right"><div class="mono steel" style="font-size:11px">PAYMENT REQUISITION</div><div class="mono clay" style="font-size:22px;font-weight:600">${r.ref}</div></div></div>
+  <div class="row" style="margin-top:16px;align-items:flex-start">
+   <div><div class="mono steel" style="font-size:11px">PAYABLE TO</div><div style="margin-top:3px">${r.payee}</div>${r.sup?`<div class="mono clay" style="font-size:11px;margin-top:2px">supplier: ${r.sup} · bank ${r.bank?'locked':'not verified'}</div>`:''}</div>
+   <div style="text-align:right"><div class="mono steel" style="font-size:11px">STATUS</div><div style="margin-top:3px"><span class="badge ${stBadge(r.st)}">${r.st}</span></div></div></div>
+  ${r.note?`<div class="steel" style="font-size:13px;margin-top:10px">${r.note}</div>`:''}
+  <table style="margin-top:16px"><thead><tr><th>DESCRIPTION</th><th class="r">AMOUNT (BWP)</th></tr></thead>
+   <tbody><tr><td>${r.note||r.payee}</td><td class="r mono">${money(r.amt)}</td></tr></tbody></table>
+  <div class="row" style="justify-content:flex-end;gap:14px;margin-top:12px"><span class="mono steel">GRAND TOTAL</span><span class="mono clay" style="font-size:20px;font-weight:600">BWP ${money(r.amt)}</span></div></div>
+ <div class="glass card"><div class="mono clay" style="font-size:11px">PAYMENT PIPELINE</div>
+  <div style="margin-top:12px"><div class="mono" style="font-size:12px"><span class="clay">1.</span> Send to Lenard Wong for sign-off</div>
+   <div class="steel mono" style="font-size:11px;margin-top:3px">Creates a single-use link the authoriser opens to approve — no login needed.</div>
+   <button class="btn" style="margin-top:8px" onclick="sendToLenard('${r.ref}')">CREATE SIGN-OFF LINK</button><div id="lenard-${r.ref}"></div></div>
+  <div style="margin-top:16px;border-top:1px solid rgba(255,255,255,.1);padding-top:12px"><div class="mono" style="font-size:12px"><span class="clay">2.</span> Download the FNB bank-loading file → upload on FNB Online Banking</div>
+   <button class="btn" style="margin-top:8px${pending?';opacity:.6':''}" onclick="downloadFnb('${r.ref}')">DOWNLOAD FNB UPLOAD FILE (.csv)</button>
+   <div class="steel mono" style="font-size:11px;margin-top:6px">${pending?'In the live app this unlocks only after Lenard authorises and the supplier bank is locked — built solely from verified details, never an OCR/typed draft.':'Built only from verified, locked bank details.'}</div></div>
+  <div style="margin-top:16px;border-top:1px solid rgba(255,255,255,.1);padding-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+   ${pending?`<span class="alink" style="border:1px solid rgba(244,166,35,.4);border-radius:9px;padding:7px 12px" onclick="amend('${r.ref}')">AMEND</span>`:''}
+   ${(pending||rejected)?`<span class="alink" style="border:1px solid rgba(255,255,255,.15);border-radius:9px;padding:7px 12px;color:#fca5a5" onclick="delRq('${r.ref}')">DELETE</span>`:`<span class="steel mono" style="font-size:11px;padding:7px 0">${paid?'Paid & locked — cannot be deleted (audit).':'Locked.'}</span>`}</div></div>
+ <div class="steel mono" style="font-size:10px;margin-top:8px">Demo — sample data. The live app sends real links and builds the real FNB file from verified banking.</div>`;}
+
+function sendToLenard(ref){const tok=Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,10);
+ const link=location.origin+location.pathname.replace('index.html','')+'authorize/'+tok;
+ const el=document.getElementById('lenard-'+ref);if(!el)return;
+ el.innerHTML=`<div style="margin-top:10px;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px"><div class="steel mono" style="font-size:11px">Single-use link for the authoriser (demo):</div>
+  <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap"><input class="inp" style="flex:1;min-width:200px;font-size:11px" readonly value="${link}"/>
+  <button class="inp" style="cursor:pointer;background:none" onclick="navigator.clipboard&&navigator.clipboard.writeText('${link}');this.textContent='COPIED'">COPY</button></div></div>`;}
+
+function downloadFnb(ref){const r=rqs.find(x=>x.ref===ref);if(!r)return;
+ const t=new Date(),dd=String(t.getDate()).padStart(2,'0'),mm=String(t.getMonth()+1).padStart(2,'0'),date=dd+'-'+mm+'-'+t.getFullYear();
+ const hdr=['RECIPIENT NAME','RECIPIENT ACCOUNT','RECIPIENT ACCOUNT TYPE','BRANCHCODE','AMOUNT','OWN REFERENCE','RECIPIENT REFERENCE','EMAIL 1 NOTIFY','EMAIL 1 ADDRESS','EMAIL 1 SUBJECT','EMAIL 2 NOTIFY','EMAIL 2 ADDRESS','EMAIL 2 SUBJECT','EMAIL 3 NOTIFY','EMAIL 3 ADDRESS','EMAIL 3 SUBJECT','EMAIL 4 NOTIFY','EMAIL 4 ADDRESS','EMAIL 4 SUBJECT','EMAIL 5 NOTIFY','EMAIL 5 ADDRESS','EMAIL 5 SUBJECT','FAX 1 NOTIFY','FAX 1 CODE','FAX 1 NUMBER','FAX 1 SUBJECT','FAX 2 NOTIFY','FAX 2 CODE','FAX 2 NUMBER','FAX 2 SUBJECT','SMS 1 NOTIFY','SMS 1 CODE','SMS 1 NUMBER','SMS 2 NOTIFY','SMS 2 CODE','SMS 2 NUMBER'];
+ const cols=new Array(36).fill('');
+ cols[0]=(r.sup||r.payee).slice(0,30);cols[1]='620000000'+ref.replace('RQ-','');cols[2]='1';cols[3]=r.bank?r.bank.branch:'250167';
+ cols[4]=r.amt.toFixed(2);cols[5]=ref;cols[6]=ref;cols[7]='N';
+ const NL=String.fromCharCode(13,10);
+ const csv=['BInSol - U ver 1.00',date,'62000000000,',hdr.join(','),cols.join(',')].join(NL)+NL;
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='FNB_'+ref+'_SAMPLE.csv';a.click();URL.revokeObjectURL(a.href);}
+
+function delRq(ref){const r=rqs.find(x=>x.ref===ref);if(!r)return;
+ if(r.st==='PAID'){alert('A paid RQ is locked for audit and cannot be deleted.');return;}
+ if(!confirm('Delete '+ref+'? This cannot be undone.'))return;
+ rqs.splice(rqs.findIndex(x=>x.ref===ref),1);show('rq');}
 
 function listView(title,sub,cols,rows){return `<h1 class="pg">${title}</h1><p class="sub">${sub}</p>
  <div class="glass card"><table><thead><tr>${cols.map((c,i)=>`<th class="${i===cols.length-1?'r':''}">${c}</th>`).join('')}</tr></thead>
