@@ -23,37 +23,29 @@
   td{padding:9px 6px;border-bottom:1px solid rgba(255,255,255,.06)}
   td.r,th.r{text-align:right}
   .crest{filter:drop-shadow(0 0 16px rgba(201,162,39,.5))}
-
-  /* login overlay */
+  .alink{color:var(--clay);cursor:pointer;font-family:var(--mono);font-size:12px}
   #login{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;
     background:radial-gradient(900px 600px at 50% 0%,#16365a 0,rgba(11,20,32,1) 70%)}
   #login .card{width:100%;max-width:360px;padding:28px;margin-top:18px}
-
-  /* app shell */
   #app{display:none;grid-template-columns:210px 1fr;min-height:100vh}
   .side{border-right:1px solid rgba(255,255,255,.1);background:rgba(11,20,32,.45);padding:18px;position:sticky;top:0;height:100vh}
   .brand{display:flex;align-items:center;gap:8px;margin-bottom:18px}.brand b{font-family:var(--serif);font-size:13px}
-  .nav button{display:block;width:100%;text-align:left;background:none;border:0;border-radius:9px;padding:9px 11px;margin-bottom:2px;
-    font-family:var(--mono);font-size:11px;letter-spacing:.07em;color:var(--steel);cursor:pointer}
+  .nav button{display:block;width:100%;text-align:left;background:none;border:0;border-radius:9px;padding:9px 11px;margin-bottom:2px;font-family:var(--mono);font-size:11px;letter-spacing:.07em;color:var(--steel);cursor:pointer}
   .nav button.active{background:rgba(244,166,35,.15);color:var(--clay)}
   .nav button:hover{color:var(--cream)}
   .logout{margin-top:14px;width:100%;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:8px;background:none;color:var(--steel);font-family:var(--mono);font-size:11px;cursor:pointer}
   .main{padding:26px;max-width:1000px}
-  h1.pg{font-family:var(--serif);font-size:28px;font-weight:700;margin:0}
-  .sub{color:var(--steel);margin:4px 0 0}
+  h1.pg{font-family:var(--serif);font-size:28px;font-weight:700;margin:0}.sub{color:var(--steel);margin:4px 0 0}
   .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:18px}
   .kpi{padding:16px}.kpi .k{font-family:var(--mono);font-size:11px;color:var(--steel)}.kpi .v{font-family:var(--mono);font-size:22px;font-weight:600;margin-top:8px}.kpi .s{font-size:11px;color:var(--steel);margin-top:3px}
   .card{padding:18px;margin-top:14px}
   .row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-  .hide{display:none}
   @media(min-width:760px){.kpis{grid-template-columns:repeat(4,1fr)}}
   @media(max-width:600px){#app{grid-template-columns:1fr}.side{display:none}}
-  .demobar{position:fixed;bottom:0;left:0;right:0;background:rgba(244,166,35,.12);border-top:1px solid rgba(244,166,35,.3);
-    font-family:var(--mono);font-size:11px;color:#fcd34d;text-align:center;padding:6px;z-index:40}
+  .demobar{position:fixed;bottom:0;left:0;right:0;background:rgba(244,166,35,.12);border-top:1px solid rgba(244,166,35,.3);font-family:var(--mono);font-size:11px;color:#fcd34d;text-align:center;padding:6px;z-index:40}
 </style>
 </head>
 <body>
-<!-- crest svg template -->
 <svg width="0" height="0"><defs><linearGradient id="brass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F4D27A"/><stop offset=".5" stop-color="#C9A227"/><stop offset="1" stop-color="#8A6D12"/></linearGradient></defs></svg>
 
 <div id="login">
@@ -65,7 +57,7 @@
     <label class="lbl">USERNAME</label><input class="inp" style="width:100%" value="GRC Admin" />
     <label class="lbl" style="margin-top:14px">PASSWORD</label><input class="inp" style="width:100%" type="password" value="00000000" />
     <button class="btn" style="width:100%;margin-top:20px" onclick="enter()">INITIALIZE SESSION</button>
-    <p class="steel mono" style="font-size:10px;text-align:center;margin-top:14px">Demo — click to enter. The real app uses your set password.</p>
+    <p class="steel mono" style="font-size:10px;text-align:center;margin-top:14px">Demo — click to enter. Sample data only.</p>
   </div>
 </div>
 
@@ -78,27 +70,37 @@
   <main class="main" id="main"></main>
 </div>
 
-<div class="demobar">Interactive demo · sample data · try “Raise RQ”. The real app runs at localhost:3007 with live data.</div>
+<div class="demobar">Interactive demo · sample data · try “Raise RQ” and “Amend”. The real app runs at localhost:3007 with live data.</div>
 
 <script>
 const money=n=>(n<0?'('+Math.abs(n).toLocaleString(undefined,{minimumFractionDigits:2})+')':n.toLocaleString(undefined,{minimumFractionDigits:2}));
 function enter(){document.getElementById('login').style.display='none';document.getElementById('app').style.display='grid';show('dash');}
-
 const TABS=[['dash','Dashboard'],['rq','Requisitions'],['suppliers','Suppliers'],['members','Members'],['events','Events'],['inventory','Inventory'],['reports','Reports']];
 
 let nextRq=341;
 const rqs=[
- {ref:'RQ-340',payee:'Member — Transport Refund',amt:1650,st:'PENDING'},
- {ref:'RQ-339',payee:'Gift Wages — May 2026',amt:2100,st:'PAID'},
- {ref:'RQ-338',payee:'Gift Wages — April 2026',amt:2100,st:'PAID'},
- {ref:'RQ-337',payee:'Range Officer — Reimbursement',amt:3480,st:'PAID'},
+ {ref:'RQ-340',payee:'Transport refund',amt:1650,st:'PENDING'},
+ {ref:'RQ-339',payee:'Gift wages — May 2026',amt:2100,st:'PAID'},
+ {ref:'RQ-338',payee:'Gift wages — April 2026',amt:2100,st:'PAID'},
+ {ref:'RQ-337',payee:'Range officer reimbursement',amt:3480,st:'PAID'},
+ {ref:'RQ-336',payee:'Ammunition supplier',amt:134800,st:'PENDING'},
 ];
-const suppliers=[['Ammunition Supplier','First Capital Bank','LOCKED'],['Clay Targets Co','—','PENDING'],['Hardware Supplier','—','NO DETAILS'],['Range Services','—','NO DETAILS']];
-const members=[['James M.','Individual','ACTIVE'],['Peter N.','Individual','ACTIVE'],['Acme Corporate (Pty)','Corporate','ACTIVE'],['Samuel K.','Individual','LAPSED']];
+const suppliers=[
+ ['Pan-African Ammunition','First Capital Bank','LOCKED'],['Clay Targets Supplies','Stanbic','LOCKED'],
+ ['Trap Machine Services','—','PENDING'],['Premier Auto Repairs','—','NO DETAILS'],['Range Hardware Co','First National Bank','LOCKED'],
+ ['Print & Signage Co','—','PENDING'],['Fuel & Logistics','—','NO DETAILS'],['Trophy & Engraving','—','PENDING'],
+ ['Catering Services','—','NO DETAILS'],['Water Bowser Services','First Capital Bank','LOCKED'],['Promatic Clay Machines','Absa','LOCKED'],
+ ['Laser & Electronics','—','PENDING'],['Grounds Maintenance','—','NO DETAILS'],['Security Services','—','NO DETAILS'],
+ ['Insurance Brokers','—','PENDING'],['Stationery Supplies','—','NO DETAILS'],['Photography Services','—','NO DETAILS'],
+ ['Transport Holdings','First Capital Bank','LOCKED'],['First Aid / Medical','—','NO DETAILS'],['IT & Web Services','—','PENDING'],
+ ['Targets & Markers Co','—','NO DETAILS'],['Refreshments Supplier','—','NO DETAILS'],['Plumbing & Repairs','—','NO DETAILS'],
+ ['Electrical Works','—','PENDING'],['Cleaning Services','—','NO DETAILS'],['Range Helper (wages)','First National Bank','LOCKED'],
+ ['Competition Prizes','—','NO DETAILS'],['Member Reimbursements','—','NO DETAILS'],
+];
+const members=[['James M.','Individual','ACTIVE'],['Peter N.','Individual','ACTIVE'],['Acme Corporate (Pty)','Corporate','ACTIVE'],['Samuel K.','Individual','LAPSED'],['David R.','Individual','ACTIVE'],['Grace T.','Individual','ACTIVE'],['Highveld Holdings','Corporate','ACTIVE'],['Brian O.','Individual','LAPSED'],['Lerato M.','Individual','ACTIVE'],['Thabo S.','Individual','ACTIVE']];
 const events=[['Open Championship 2026','SHOTGUN','Competition','2026-07-15'],['Sunday Rifle Practice','RIFLE','Practice','2026-07-05'],['Airgun Shootout','AIRGUN','Competition','2026-08-01']];
 const inv=[['Clever Mirage T2 28gr','AMMO',300],['Clever Mirage T4 28gr','AMMO',260],['Clever Mirage T2 24gr','AMMO',80],['Eley 28gr','AMMO',30],['Sporting Clays','CLAY',4200]];
-const pl={income:[['Ammo Sales',686777.50],['Membership Fees',71425],['Corporate Membership',30500],['Ammo Recoveries',8500]],
- exp:[['Ammo & Clay Purchases',513860.63],['Clay Purchases',71504.05],['Competition Expenses',60368.94],['Autoball Machine (capital)',108536.23],['Other expenses',67693.44]]};
+const pl={income:[['Ammo Sales',686777.50],['Membership Fees',71425],['Corporate Membership',30500],['Ammo Recoveries',8500]],exp:[['Ammo & Clay Purchases',513860.63],['Clay Purchases',71504.05],['Competition Expenses',60368.94],['Autoball Machine (capital)',108536.23],['Other expenses',67693.44]]};
 
 const disc=d=>({SHOTGUN:'b-shot',RIFLE:'b-rifle',AIRGUN:'b-air'}[d]||'b-grey');
 const stBadge=s=>['LOCKED','ACTIVE','PAID'].includes(s)?'b-ok':['NO DETAILS'].includes(s)?'b-grey':'b-warn';
@@ -108,7 +110,7 @@ function show(id){
  const m=document.getElementById('main');
  if(id==='dash')m.innerHTML=dash();
  else if(id==='rq')m.innerHTML=rqView();
- else if(id==='suppliers')m.innerHTML=listView('Suppliers','Payees and verified banking details.',['NAME','BANK','STATUS'],suppliers.map(s=>[s[0],s[1],`<span class="badge ${stBadge(s[2])}">${s[2]}</span>`]));
+ else if(id==='suppliers')m.innerHTML=listView('Suppliers','Payees and verified banking details — '+suppliers.length+' on file.',['NAME','BANK','STATUS'],suppliers.map(s=>[s[0],s[1],`<span class="badge ${stBadge(s[2])}">${s[2]}</span>`]));
  else if(id==='members')m.innerHTML=listView('Members','The club roll — P1,500/yr individual + corporate.',['NAME','TYPE','STANDING'],members.map(s=>[s[0],s[1],`<span class="badge ${stBadge(s[2])}">${s[2]}</span>`]));
  else if(id==='events')m.innerHTML=listView('Events','Plan shotgun, rifle & airgun events.',['EVENT','DISCIPLINE','TYPE','DATE'],events.map(e=>[e[0],`<span class="badge ${disc(e[1])}">${e[1]}</span>`,e[2],e[3]]));
  else if(id==='inventory')m.innerHTML=listView('Inventory — Ammo & Clays','Live balances from stock movements.',['PRODUCT','CATEGORY','ON HAND'],inv.map(p=>[p[0],`<span class="badge ${p[1]==='AMMO'?'b-shot':'b-air'}">${p[1]}</span>`,`<span class="mono">${p[2]}</span>`]));
@@ -119,30 +121,35 @@ function dash(){return `<h1 class="pg">Morning, Range Officer</h1><p class="sub"
  <div class="kpis">
   <div class="glass kpi"><div class="k">CASH ON HAND</div><div class="v">BWP 249,945</div><div class="s">FY25 year-end</div></div>
   <div class="glass kpi"><div class="k">AMMO SALES YTD</div><div class="v">686,778</div><div class="s">BWP (FY25)</div></div>
-  <div class="glass kpi"><div class="k">ACTIVE MEMBERS</div><div class="v">${members.filter(m=>m[2]==='ACTIVE').length}</div><div class="s">of ${members.length} on roll</div></div>
+  <div class="glass kpi"><div class="k">SUPPLIERS</div><div class="v">${suppliers.length}</div><div class="s">${suppliers.filter(s=>s[2]==='LOCKED').length} bank-verified</div></div>
   <div class="glass kpi"><div class="k">NEXT RQ</div><div class="v clay">RQ-${nextRq}</div><div class="s">continues 2026 seq.</div></div>
  </div>
  <div class="glass card"><div class="row"><span class="serif" style="font-size:17px">Recent Requisitions</span><button class="btn" onclick="show('rq')">+ RAISE RQ</button></div>
-  <table style="margin-top:10px"><tbody>${rqs.slice(0,4).map(r=>`<tr><td class="mono">${r.ref}</td><td class="steel">${r.payee}</td><td class="r mono">BWP ${money(r.amt)}</td><td class="r"><span class="badge ${stBadge(r.st)}">${r.st}</span></td></tr>`).join('')}</tbody></table>
+  <table style="margin-top:10px"><tbody>${rqs.slice(0,5).map(r=>`<tr><td class="mono">${r.ref}</td><td class="steel">${r.payee}</td><td class="r mono">BWP ${money(r.amt)}</td><td class="r"><span class="badge ${stBadge(r.st)}">${r.st}</span></td></tr>`).join('')}</tbody></table>
  </div>`;}
 
-function rqView(){return `<h1 class="pg">Requisitions</h1><p class="sub">Next number: RQ-${nextRq}.</p>
+function rqView(){return `<h1 class="pg">Requisitions</h1><p class="sub">Next number: RQ-${nextRq}. Pending RQs can be amended.</p>
  <div class="glass card"><div class="mono clay" style="font-size:11px">RAISE A REQUISITION</div>
   <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
-   <input class="inp" id="rp" placeholder="Payable to (e.g. Ammunition Supplier)" style="flex:2;min-width:180px"/>
+   <input class="inp" id="rp" placeholder="Payable to" style="flex:2;min-width:180px"/>
    <input class="inp" id="ra" placeholder="Amount" inputmode="decimal" style="flex:1;min-width:120px"/>
    <button class="btn" onclick="raise()">GENERATE RQ-${nextRq}</button>
   </div></div>
- <div class="glass card"><table><thead><tr><th>RQ</th><th>PAYABLE TO</th><th class="r">AMOUNT (BWP)</th><th class="r">STATUS</th></tr></thead>
-  <tbody id="rqbody">${rqs.map(r=>`<tr><td class="mono clay">${r.ref}</td><td>${r.payee}</td><td class="r mono">${money(r.amt)}</td><td class="r"><span class="badge ${stBadge(r.st)}">${r.st}</span></td></tr>`).join('')}</tbody></table></div>`;}
+ <div class="glass card"><table><thead><tr><th>RQ</th><th>PAYABLE TO</th><th class="r">AMOUNT (BWP)</th><th class="r">STATUS</th><th class="r">ACTION</th></tr></thead>
+  <tbody>${rqs.map(r=>`<tr><td class="mono clay">${r.ref}</td><td>${r.payee}</td><td class="r mono">${money(r.amt)}</td><td class="r"><span class="badge ${stBadge(r.st)}">${r.st}</span></td><td class="r">${r.st==='PENDING'?`<span class="alink" onclick="amend('${r.ref}')">Amend</span>`:'<span class="steel" style="font-size:12px">locked</span>'}</td></tr>`).join('')}</tbody></table></div>`;}
 
 function raise(){const p=document.getElementById('rp').value.trim();const a=parseFloat(document.getElementById('ra').value)||0;
  if(!p||a<=0){alert('Enter a payee and amount.');return;}
  rqs.unshift({ref:'RQ-'+nextRq,payee:p,amt:a,st:'PENDING'});nextRq++;show('rq');}
 
+function amend(ref){const r=rqs.find(x=>x.ref===ref);if(!r)return;
+ const np=prompt('Amend payee for '+ref+':',r.payee);if(np===null)return;
+ const na=prompt('Amend amount for '+ref+' (BWP):',r.amt);if(na===null)return;
+ r.payee=np.trim()||r.payee;r.amt=parseFloat(na)||r.amt;show('rq');}
+
 function listView(title,sub,cols,rows){return `<h1 class="pg">${title}</h1><p class="sub">${sub}</p>
- <div class="glass card"><table><thead><tr>${cols.map((c,i)=>`<th class="${i>=2&&cols.length<4?'r':''}">${c}</th>`).join('')}</tr></thead>
- <tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td class="${i===r.length-1&&r.length>=3?'r':''}">${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
+ <div class="glass card"><table><thead><tr>${cols.map((c,i)=>`<th class="${i===cols.length-1?'r':''}">${c}</th>`).join('')}</tr></thead>
+ <tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td class="${i===r.length-1?'r':''}">${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
 
 function reports(){const ti=pl.income.reduce((s,x)=>s+x[1],0),te=pl.exp.reduce((s,x)=>s+x[1],0);
  return `<h1 class="pg">Financial Statements</h1><p class="sub">Derived live from the journals — FY25.</p>
@@ -156,10 +163,10 @@ function reports(){const ti=pl.income.reduce((s,x)=>s+x[1],0),te=pl.exp.reduce((
    <tr style="border-top:1px solid rgba(255,255,255,.15)"><td><b>Total expenditure</b></td><td class="r mono">${money(te)}</td></tr>
    <tr><td class="serif">Surplus / (Deficit)</td><td class="r mono" style="color:${ti-te<0?'#fca5a5':'#6ee7b7'}">${money(ti-te)}</td></tr>
   </tbody></table></div>
- <div class="glass card"><div class="serif" style="font-size:17px">Statement of Financial Position · as at 31 Dec 2025</div>
+ <div class="glass card"><div class="serif" style="font-size:17px">Statement of Financial Position · 31 Dec 2025</div>
   <table style="margin-top:8px"><tbody>
-   <tr><td>Cash & cash equivalents</td><td class="r mono">249,944.78</td></tr>
-   <tr><td>Inventory & PPE</td><td class="r mono">disclosed (Notes)</td></tr>
+   <tr><td>Cash &amp; cash equivalents</td><td class="r mono">249,944.78</td></tr>
+   <tr><td>Inventory &amp; PPE</td><td class="r mono">disclosed (Notes)</td></tr>
    <tr style="border-top:1px solid rgba(255,255,255,.15)"><td><b>Total assets</b></td><td class="r mono">249,944.78</td></tr>
    <tr><td>Accumulated surplus</td><td class="r mono">249,944.78</td></tr>
    <tr><td class="mono" style="font-size:11px;color:#6ee7b7">✓ balanced · debt-free</td><td></td></tr>
