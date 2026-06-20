@@ -43,6 +43,13 @@
   @media(min-width:760px){.kpis{grid-template-columns:repeat(4,1fr)}}
   @media(max-width:600px){#app{grid-template-columns:1fr}.side{display:none}}
   .demobar{position:fixed;bottom:0;left:0;right:0;background:rgba(244,166,35,.12);border-top:1px solid rgba(244,166,35,.3);font-family:var(--mono);font-size:11px;color:#fcd34d;text-align:center;padding:6px;z-index:40}
+  @media print{
+    body{background:#fff!important}
+    .side,.demobar,.no-print{display:none!important}
+    #app{display:block!important}
+    .main{padding:0!important;max-width:100%!important}
+    #rqpaper{box-shadow:none!important;border-radius:0!important}
+  }
 </style>
 </head>
 <body>
@@ -70,7 +77,7 @@
   <main class="main" id="main"></main>
 </div>
 
-<div class="demobar">Interactive demo · sample data · click any RQ → PRINT PDF · SEND TO LENARD · DOWNLOAD FNB FILE · AMEND · DELETE. Real banking lives only in the private app.</div>
+<div class="demobar no-print">Interactive demo · sample data · click any RQ → PRINT PDF · SEND TO LENARD · DOWNLOAD FNB FILE · AMEND · DELETE. Real banking lives only in the private app.</div>
 
 <script>
 const money=n=>(n<0?'('+Math.abs(n).toLocaleString(undefined,{minimumFractionDigits:2})+')':n.toLocaleString(undefined,{minimumFractionDigits:2}));
@@ -80,7 +87,7 @@ const TABS=[['dash','Dashboard'],['rq','Requisitions'],['suppliers','Suppliers']
 let nextRq=342;
 // Demo requisitions — SAMPLE data only. Account numbers are masked/fake (no real banking).
 const rqs=[
- {ref:'RQ-341',payee:'Water Bowser Services',amt:500,st:'PENDING',note:'Water to fill the range tank',sup:'Water Bowser Services',bank:{name:'First National Bank',acct:'62•••••••01',branch:'282167'}},
+ {ref:'RQ-341',payee:'Wangu',amt:500,st:'PENDING',note:'Requested by John Smuts',svc:'Water for Range',payinfo:'eWallet — Wangu · 7•• ••• ••8'},
  {ref:'RQ-340',payee:'Transport refund',amt:1650,st:'PENDING',note:'Member fuel reimbursement'},
  {ref:'RQ-339',payee:'Gift wages — May 2026',amt:2100,st:'PAID',note:'Range helper monthly wage'},
  {ref:'RQ-338',payee:'Gift wages — April 2026',amt:2100,st:'PAID'},
@@ -157,21 +164,35 @@ function amend(ref){const r=rqs.find(x=>x.ref===ref);if(!r)return;
 
 function rqDoc(ref){const r=rqs.find(x=>x.ref===ref);if(!r){show('rq');return;}
  const pending=r.st==='PENDING',paid=r.st==='PAID',rejected=r.st==='REJECTED';
+ const today=new Date(),M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+ const dLong=today.getDate()+' '+M[today.getMonth()]+' '+today.getFullYear();
+ const dShort=String(today.getDate()).padStart(2,'0')+'-'+M[today.getMonth()]+'-'+String(today.getFullYear()).slice(2);
+ const pay=r.bank?(r.bank.name+'   '+r.bank.acct+'   · Branch '+r.bank.branch):(r.payinfo||'—');
+ const svc=r.svc||r.note||r.payee;
+ const L='color:#7a7363;font-family:var(--mono);font-size:11px;letter-spacing:.06em';
  document.getElementById('main').innerHTML=`
- <div class="row" style="margin-bottom:10px"><span class="alink" onclick="show('rq')">← Requisitions</span>
+ <div class="row no-print" style="margin-bottom:10px"><span class="alink" onclick="show('rq')">← Requisitions</span>
   <button class="inp" style="cursor:pointer;background:none" onclick="window.print()">PRINT / SAVE PDF</button></div>
- <div class="glass card" id="rqpaper">
-  <div class="row" style="align-items:flex-start">
-   <div><div class="serif" style="font-size:17px">Gaborone Rifle Club</div><div class="steel mono" style="font-size:11px">Unit 2, Plot 144, Mountain View · P.O. Box 26374, Gaborone</div></div>
-   <div style="text-align:right"><div class="mono steel" style="font-size:11px">PAYMENT REQUISITION</div><div class="mono clay" style="font-size:22px;font-weight:600">${r.ref}</div></div></div>
-  <div class="row" style="margin-top:16px;align-items:flex-start">
-   <div><div class="mono steel" style="font-size:11px">PAYABLE TO</div><div style="margin-top:3px">${r.payee}</div>${r.sup?`<div class="mono clay" style="font-size:11px;margin-top:2px">supplier: ${r.sup} · bank ${r.bank?'locked':'not verified'}</div>`:''}</div>
-   <div style="text-align:right"><div class="mono steel" style="font-size:11px">STATUS</div><div style="margin-top:3px"><span class="badge ${stBadge(r.st)}">${r.st}</span></div></div></div>
-  ${r.note?`<div class="steel" style="font-size:13px;margin-top:10px">${r.note}</div>`:''}
-  <table style="margin-top:16px"><thead><tr><th>DESCRIPTION</th><th class="r">AMOUNT (BWP)</th></tr></thead>
-   <tbody><tr><td>${r.note||r.payee}</td><td class="r mono">${money(r.amt)}</td></tr></tbody></table>
-  <div class="row" style="justify-content:flex-end;gap:14px;margin-top:12px"><span class="mono steel">GRAND TOTAL</span><span class="mono clay" style="font-size:20px;font-weight:600">BWP ${money(r.amt)}</span></div></div>
- <div class="glass card"><div class="mono clay" style="font-size:11px">PAYMENT PIPELINE</div>
+ <div id="rqpaper" style="background:#FBFAF4;color:#1b2533;border-radius:18px;padding:26px;box-shadow:0 18px 40px rgba(0,0,0,.35)">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid #d9d2c2;padding-bottom:14px">
+   <div style="display:flex;gap:10px;align-items:center"><svg width="34" height="34" viewBox="0 0 120 120"><g stroke="url(#brass)" stroke-width="6" stroke-linecap="round"><line x1="30" y1="96" x2="90" y2="26"/><line x1="90" y1="96" x2="30" y2="26"/></g><rect x="52" y="42" width="16" height="46" rx="3" fill="url(#brass)"/><path d="M52 42 L60 18 L68 42 Z" fill="url(#brass)"/></svg>
+    <div><div class="serif" style="font-size:18px;color:#0D1B2A;font-weight:700">Gaborone Rifle Club</div><div style="${L}">Unit 2, Plot 144, Mountain View · P.O. Box 26374, Gaborone</div></div></div>
+   <div style="text-align:right"><div style="${L}">DATE</div><div class="mono" style="font-size:13px">${dLong}</div></div></div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:16px">
+   <div><div style="${L}">PAYABLE TO</div><div class="serif" style="font-size:24px;color:#0D1B2A;font-weight:700;margin-top:2px">${r.payee}</div></div>
+   <div style="text-align:right"><div style="${L}">RQ NUMBER</div><div class="mono" style="font-size:22px;font-weight:700;color:#C9A227">${r.ref}</div><div style="${L};margin-top:2px">${r.st}</div></div></div>
+  <table style="margin-top:18px;width:100%;border-collapse:collapse;font-size:13px">
+   <thead><tr style="border-top:1px solid #d9d2c2;border-bottom:1px solid #d9d2c2"><th style="${L};text-align:left;padding:7px 6px">DATE</th><th style="${L};text-align:left;padding:7px 6px">RQ NUMBER</th><th style="${L};text-align:left;padding:7px 6px">TRANSACTION DETAILS</th><th style="${L};text-align:right;padding:7px 6px">AMOUNT (P)</th></tr></thead>
+   <tbody><tr style="border-bottom:1px solid #ece7da"><td class="mono" style="padding:9px 6px;color:#7a7363">${dShort}</td><td class="mono" style="padding:9px 6px;color:#7a7363">${r.ref}</td><td style="padding:9px 6px">${svc}</td><td class="mono" style="padding:9px 6px;text-align:right">${money(r.amt)}</td></tr></tbody>
+   <tfoot><tr style="border-top:2px solid #0D1B2A"><td colspan="3" class="mono" style="padding:9px 6px;text-align:right;font-weight:700;color:#0D1B2A">TOTAL</td><td class="mono" style="padding:9px 6px;text-align:right;font-weight:700;font-size:16px;color:#0D1B2A">BWP ${money(r.amt)}</td></tr></tfoot></table>
+  <div style="margin-top:16px;border:1px solid #d9d2c2;background:#F5F1E6;border-radius:9px;padding:12px"><div style="${L}">BANK AC NUMBER / eWALLET</div><div class="mono" style="font-size:13px;margin-top:3px">${pay}</div></div>
+  ${r.note?`<div style="font-size:13px;margin-top:12px;color:#5d5749">${r.note}</div>`:''}
+  <div style="display:flex;gap:40px;margin-top:22px;border-top:1px solid #d9d2c2;padding-top:14px">
+   <div style="flex:1"><div style="${L}">PAYMENT LOADED</div><div class="mono" style="margin-top:26px;border-top:1px solid #bdb6a4;padding-top:6px;font-size:13px">P. Ganesharajah</div></div>
+   <div style="flex:1"><div style="${L}">PAYMENT AUTHORISED</div><div class="mono" style="margin-top:26px;border-top:1px solid #bdb6a4;padding-top:6px;font-size:13px">L. Wong / J Smuts</div></div></div>
+  <div class="serif" style="text-align:center;margin-top:22px;color:#0D1B2A;font-size:13px">Gaborone Rifle Club</div>
+  <div style="text-align:center;${L}">Unit 2, Plot 144, Mountain View · P.O. Box 26374, Gaborone</div></div>
+ <div class="glass card no-print"><div class="mono clay" style="font-size:11px">PAYMENT PIPELINE</div>
   <div style="margin-top:12px"><div class="mono" style="font-size:12px"><span class="clay">1.</span> Send to Lenard Wong for sign-off</div>
    <div class="steel mono" style="font-size:11px;margin-top:3px">Creates a single-use link the authoriser opens to approve — no login needed.</div>
    <button class="btn" style="margin-top:8px" onclick="sendToLenard('${r.ref}')">CREATE SIGN-OFF LINK</button><div id="lenard-${r.ref}"></div></div>
