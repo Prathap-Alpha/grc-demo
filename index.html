@@ -81,6 +81,7 @@
 
 <script>
 const money=n=>(n<0?'('+Math.abs(n).toLocaleString(undefined,{minimumFractionDigits:2})+')':n.toLocaleString(undefined,{minimumFractionDigits:2}));
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function enter(){document.getElementById('login').style.display='none';document.getElementById('app').style.display='grid';show('dash');}
 const TABS=[['dash','Dashboard'],['rq','Requisitions'],['suppliers','Suppliers'],['members','Members'],['events','Events'],['inventory','Inventory'],['reports','Reports']];
 
@@ -140,7 +141,7 @@ function dash(){return `<h1 class="pg">Morning, Range Officer</h1><p class="sub"
   <div class="glass kpi"><div class="k">NEXT RQ</div><div class="v clay">RQ-${nextRq}</div><div class="s">continues 2026 seq.</div></div>
  </div>
  <div class="glass card"><div class="row"><span class="serif" style="font-size:17px">Recent Requisitions</span><button class="btn" onclick="show('rq')">+ RAISE RQ</button></div>
-  <table style="margin-top:10px"><tbody>${rqs.slice(0,5).map(r=>`<tr><td class="mono">${r.ref}</td><td class="steel">${r.payee}</td><td class="r mono">BWP ${money(r.amt)}</td><td class="r"><span class="badge ${stBadge(r.st)}">${r.st}</span></td></tr>`).join('')}</tbody></table>
+  <table style="margin-top:10px"><tbody>${rqs.slice(0,5).map(r=>`<tr><td class="mono">${r.ref}</td><td class="steel">${esc(r.payee)}</td><td class="r mono">BWP ${money(r.amt)}</td><td class="r"><span class="badge ${stBadge(r.st)}">${r.st}</span></td></tr>`).join('')}</tbody></table>
  </div>`;}
 
 function rqView(){return `<h1 class="pg">Requisitions</h1><p class="sub">Next number: RQ-${nextRq}. Click any RQ to open the document — print the PDF, send the sign-off link to Lenard, download the FNB file, amend or delete.</p>
@@ -151,7 +152,7 @@ function rqView(){return `<h1 class="pg">Requisitions</h1><p class="sub">Next nu
    <button class="btn" onclick="raise()">GENERATE RQ-${nextRq}</button>
   </div></div>
  <div class="glass card"><table><thead><tr><th>RQ</th><th>PAYABLE TO</th><th class="r">AMOUNT (BWP)</th><th class="r">STATUS</th><th class="r">ACTION</th></tr></thead>
-  <tbody>${rqs.map(r=>`<tr><td class="mono clay" style="cursor:pointer" onclick="rqDoc('${r.ref}')">${r.ref}</td><td style="cursor:pointer" onclick="rqDoc('${r.ref}')">${r.payee}</td><td class="r mono">${money(r.amt)}</td><td class="r"><span class="badge ${stBadge(r.st)}">${r.st}</span></td><td class="r"><span class="alink" onclick="rqDoc('${r.ref}')">Open →</span></td></tr>`).join('')}</tbody></table></div>`;}
+  <tbody>${rqs.map(r=>`<tr><td class="mono clay" style="cursor:pointer" onclick="rqDoc('${r.ref}')">${r.ref}</td><td style="cursor:pointer" onclick="rqDoc('${r.ref}')">${esc(r.payee)}</td><td class="r mono">${money(r.amt)}</td><td class="r"><span class="badge ${stBadge(r.st)}">${r.st}</span></td><td class="r"><span class="alink" onclick="rqDoc('${r.ref}')">Open →</span></td></tr>`).join('')}</tbody></table></div>`;}
 
 function raise(){const p=document.getElementById('rp').value.trim();const a=parseFloat(document.getElementById('ra').value)||0;
  if(!p||a<=0){alert('Enter a payee and amount.');return;}
@@ -179,14 +180,14 @@ function rqDoc(ref){const r=rqs.find(x=>x.ref===ref);if(!r){show('rq');return;}
     <div><div class="serif" style="font-size:18px;color:#0D1B2A;font-weight:700">Gaborone Rifle Club</div><div style="${L}">Unit 2, Plot 144, Mountain View · P.O. Box 26374, Gaborone</div></div></div>
    <div style="text-align:right"><div style="${L}">DATE</div><div class="mono" style="font-size:13px">${dLong}</div></div></div>
   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:16px">
-   <div><div style="${L}">PAYABLE TO</div><div class="serif" style="font-size:24px;color:#0D1B2A;font-weight:700;margin-top:2px">${r.payee}</div></div>
+   <div><div style="${L}">PAYABLE TO</div><div class="serif" style="font-size:24px;color:#0D1B2A;font-weight:700;margin-top:2px">${esc(r.payee)}</div></div>
    <div style="text-align:right"><div style="${L}">RQ NUMBER</div><div class="mono" style="font-size:22px;font-weight:700;color:#C9A227">${r.ref}</div><div style="${L};margin-top:2px">${r.st}</div></div></div>
   <table style="margin-top:18px;width:100%;border-collapse:collapse;font-size:13px">
    <thead><tr style="border-top:1px solid #d9d2c2;border-bottom:1px solid #d9d2c2"><th style="${L};text-align:left;padding:7px 6px">DATE</th><th style="${L};text-align:left;padding:7px 6px">RQ NUMBER</th><th style="${L};text-align:left;padding:7px 6px">TRANSACTION DETAILS</th><th style="${L};text-align:right;padding:7px 6px">AMOUNT (P)</th></tr></thead>
-   <tbody><tr style="border-bottom:1px solid #ece7da"><td class="mono" style="padding:9px 6px;color:#7a7363">${dShort}</td><td class="mono" style="padding:9px 6px;color:#7a7363">${r.ref}</td><td style="padding:9px 6px">${svc}</td><td class="mono" style="padding:9px 6px;text-align:right">${money(r.amt)}</td></tr></tbody>
+   <tbody><tr style="border-bottom:1px solid #ece7da"><td class="mono" style="padding:9px 6px;color:#7a7363">${dShort}</td><td class="mono" style="padding:9px 6px;color:#7a7363">${r.ref}</td><td style="padding:9px 6px">${esc(svc)}</td><td class="mono" style="padding:9px 6px;text-align:right">${money(r.amt)}</td></tr></tbody>
    <tfoot><tr style="border-top:2px solid #0D1B2A"><td colspan="3" class="mono" style="padding:9px 6px;text-align:right;font-weight:700;color:#0D1B2A">TOTAL</td><td class="mono" style="padding:9px 6px;text-align:right;font-weight:700;font-size:16px;color:#0D1B2A">BWP ${money(r.amt)}</td></tr></tfoot></table>
-  <div style="margin-top:16px;border:1px solid #d9d2c2;background:#F5F1E6;border-radius:9px;padding:12px"><div style="${L}">BANK AC NUMBER / eWALLET</div><div class="mono" style="font-size:13px;margin-top:3px">${pay}</div></div>
-  ${r.note?`<div style="font-size:13px;margin-top:12px;color:#5d5749">${r.note}</div>`:''}
+  <div style="margin-top:16px;border:1px solid #d9d2c2;background:#F5F1E6;border-radius:9px;padding:12px"><div style="${L}">BANK AC NUMBER / eWALLET</div><div class="mono" style="font-size:13px;margin-top:3px">${esc(pay)}</div></div>
+  ${r.note?`<div style="font-size:13px;margin-top:12px;color:#5d5749">${esc(r.note)}</div>`:''}
   <div style="display:flex;gap:40px;margin-top:22px;border-top:1px solid #d9d2c2;padding-top:14px">
    <div style="flex:1"><div style="${L}">PAYMENT LOADED</div><div class="mono" style="margin-top:26px;border-top:1px solid #bdb6a4;padding-top:6px;font-size:13px">P. Ganesharajah</div></div>
    <div style="flex:1"><div style="${L}">PAYMENT AUTHORISED</div><div class="mono" style="margin-top:26px;border-top:1px solid #bdb6a4;padding-top:6px;font-size:13px">L. Wong / J Smuts</div></div></div>
